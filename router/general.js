@@ -76,7 +76,6 @@ function getBookByAuthor(author) {
           selectedBooks.push(val);
         }
       });
-
       if (selectedBooks.length === 0) {
         resolve("Unable to find books with the author name");
       } else {
