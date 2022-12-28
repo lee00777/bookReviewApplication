@@ -20,10 +20,8 @@ public_users.post("/register", (req, res) => {
 });
 
 // Get the book list available in the shop
-public_users.get("/", function (req, res) {
-  //res.send(JSON.stringify({ books }, null, 4));
-
-  let getBooks = new Promise((resolve, reject) => {
+function getAllBooks() {
+  return new Promise((resolve, reject) => {
     try {
       const data = books;
       resolve(data);
@@ -31,18 +29,19 @@ public_users.get("/", function (req, res) {
       reject(err);
     }
   });
-  getBooks.then(
+}
+
+public_users.get("/", function (req, res) {
+  getAllBooks().then(
     (data) => res.send(data),
     (err) => res.send(`There was an error in getting data: ${err}`)
   );
 });
 
 // Get book details based on ISBN
-public_users.get("/isbn/:isbn", function (req, res) {
-  let isbn = req.params.isbn;
+function getBookByIsbn(isbn) {
   let selectedIsbn;
-
-  let selectBook = new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
       for (let x in books) {
         if (x === isbn) {
@@ -50,34 +49,34 @@ public_users.get("/isbn/:isbn", function (req, res) {
           resolve(books[selectedIsbn]);
         }
       }
+      if (!selectedIsbn) {
+        reject("NO matched ISBN");
+      }
     } catch (err) {
       reject(err);
     }
   });
+}
 
-  if (!selectedIsbn) {
-    res.send("Unable to find books with the ISBN");
-  }
-
-  selectBook.then(
+public_users.get("/isbn/:isbn", function (req, res) {
+  let isbn = req.params.isbn;
+  getBookByIsbn(isbn).then(
     (data) => res.send(data),
     (err) => res.send(`There was an error in finding books with ISBN: ${err}`)
   );
 });
 
 // Get book details based on author
-public_users.get("/author/:author", async function (req, res) {
-  let author = req.params.author;
+function getBookByAuthor(author) {
   let selectedBooks = [];
-
-  let selectBook = new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
       Object.values(books).forEach((val) => {
         if (val.author === author) {
           selectedBooks.push(val);
         }
       });
-
+      ß;
       if (selectedBooks.length === 0) {
         resolve("Unable to find books with the author name");
       } else {
@@ -88,26 +87,26 @@ public_users.get("/author/:author", async function (req, res) {
       reject(err);
     }
   });
+}
 
-  selectBook.then(
+public_users.get("/author/:author", function (req, res) {
+  let author = req.params.author;
+  getBookByAuthor(author).then(
     (data) => res.send(data),
     (err) => res.send(`There was an error in finding books with the author name: ${err}`)
   );
 });
 
 // Get all books based on title
-public_users.get("/title/:title", function (req, res) {
-  let title = req.params.title;
+function getBookByTitle(title) {
   let selectedBooks = [];
-
-  let selectBook = new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
       Object.values(books).forEach((val) => {
         if (val.title === title) {
           selectedBooks.push(val);
         }
       });
-
       if (selectedBooks.length === 0) {
         resolve("Unable to find books with the title");
       } else {
@@ -118,8 +117,10 @@ public_users.get("/title/:title", function (req, res) {
       reject(err);
     }
   });
-
-  selectBook.then(
+}
+public_users.get("/title/:title", function (req, res) {
+  let title = req.params.title;
+  getBookByTitle(title).then(
     (data) => res.send(data),
     (err) => res.send(`There was an error in finding books with the title: ${err}`)
   );
@@ -133,7 +134,6 @@ public_users.get("/review/:isbn", function (req, res) {
   for (let x in books) {
     if (x === isbn) {
       selectedIsbn = x;
-      // console.log(books[x]);
       let reviews = books[x].reviews;
       let numberOfReviews = Object.keys(reviews).length;
       if (numberOfReviews === 0) {
